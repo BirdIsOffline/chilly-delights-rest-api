@@ -22,7 +22,7 @@ async function eventually(fn, { timeoutMs = 3500 } = {}) {
   throw last ?? new Error('Condition was not reached before timeout');
 }
 
-// Sequential because the student implementation listens on a fixed port.
+// Run sequentially because the server listens on a fixed port.
 test('real local server: menu CRUD, validation and JSON file persistence', async () => {
   const folder = await mkdtemp(path.join(tmpdir(), 'chilly-api-'));
   let server;
