@@ -1,75 +1,93 @@
-# Chilly Delights — Node.js Menu REST API
+# Chilly Delights REST API
 
-An IT-207 course project implementing a small local HTTP server for a fictional ice-cream shop. The server provides endpoints to list menu items, retrieve an item by code, create entries, update entries, and delete entries. Menu data is stored in a local JSON file.
+A Node.js HTTP API for managing an ice-cream shop menu. The server supports creating, retrieving, updating, and deleting menu items, with data stored in a local JSON file.
 
-**Technologies:** JavaScript · Node.js built-in `http`, `fs`, and `url` modules · HTTP · JSON · file streams
+Developed as part of IT-207 coursework.
 
-> **Scope:** Educational assignment, not a production-ready service. It does not use a database, authentication, or production deployment. This repository presents the student's completed **Part 2** implementation and separately added automated contract tests; it is not a claim that multiple lab assignments constituted a single independent product.
+## Technologies
 
-## What I built
+JavaScript, Node.js, HTTP, JSON, and Node.js built-in `http`, `fs`, and `url` modules.
 
-- Routes HTTP `GET`, `POST`, `PUT`, and `DELETE` requests using `http.createServer()` and a method switch.
-- Parses paths and query parameters with `URL` to select an operation and menu item.
-- Reads and updates a JSON menu file using Node's asynchronous filesystem APIs.
-- Streams the menu listing and welcome message with `fs.createReadStream()`.
-- Returns HTTP error statuses for missing entries, duplicate codes, and invalid item codes.
+## Features
 
-## Run locally
+- GET, POST, PUT, and DELETE endpoints for menu management
+- URL path and query-parameter parsing
+- Asynchronous JSON file reads and writes
+- File streaming for menu listings and the welcome page
+- HTTP status responses for invalid requests, duplicate codes, and missing items
+- Automated integration tests covering CRUD operations and file persistence
 
-Requires **Node.js 18+** (tested with Node.js 22). No external packages or installation required.
+## Project Structure
+
+```text
+.
+├── server.js
+├── menu/
+│   └── menu.json
+├── welcome/
+│   └── welcome.txt
+├── tests/
+│   └── api.test.mjs
+└── .github/
+    └── workflows/
+        └── node-ci.yml
+```
+
+## Getting Started
+
+Requires Node.js 18 or later; CI uses Node.js 22. No external dependencies are required.
+
+From the project root, run:
 
 ```bash
 node server.js
 ```
 
-The server listens on **port 3030**. Open `http://localhost:3030/` for the welcome text or `http://localhost:3030/menu` for the menu JSON. Stop with **Ctrl+C**.
+The server listens on port **3030**.
 
-> Run from the project **root directory**. The original course implementation uses relative paths `./menu/menu.json` and `./welcome/welcome.txt`.
+- Welcome page: `http://localhost:3030/`
+- Menu listing: `http://localhost:3030/menu`
 
-## API reference
+Stop the server with `Ctrl+C`.
 
-| HTTP method | Endpoint | Behavior | Common status |
-|---|---|---|---|
-| GET | `/` | Stream welcome text | 200 |
-| GET | `/menu` | Stream entire JSON menu | 200, 404 |
-| GET | `/menu/10233` | Retrieve item by five-character code | 200, 404 |
-| POST | `/menu?code=45678&name=Mango&price=4.50` | Add an item using URL query parameters | 200, 400 |
-| PUT | `/menu/45678?price=5.00` | Update an item using URL query parameters | 200, 404 |
-| DELETE | `/menu/45678` | Remove an item | 200, 404 |
+## API Endpoints
 
-> **Important:** This coursework API accepts form-like values in the **URL query string**, *not* a JSON request body. It uses a `200 OK` response for successful creates/updates/deletes rather than a strict production REST convention.
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/` | Return the welcome message |
+| GET | `/menu` | List menu items |
+| GET | `/menu/10233` | Retrieve a menu item by code |
+| POST | `/menu?code=45678&name=Mango&price=4.50` | Add a menu item |
+| PUT | `/menu/45678?price=5.00` | Update a menu item |
+| DELETE | `/menu/45678` | Delete a menu item |
 
-### Try a safe example (Windows PowerShell / Command Prompt)
+Create and update operations accept values through **URL query parameters**, not a JSON request body. Changes are persisted to `menu/menu.json`.
 
-Start `node server.js` in one terminal, then run these in a **second** terminal:
+## Example Requests
+
+With the server running, use these commands from a second terminal:
 
 ```bash
-curl.exe http://localhost:3030/menu
-curl.exe "http://localhost:3030/menu/10233"
-curl.exe -X POST "http://localhost:3030/menu?code=45678&name=Mango&price=4.50"
-curl.exe "http://localhost:3030/menu/45678"
-curl.exe -X PUT "http://localhost:3030/menu/45678?price=5.00"
-curl.exe -X DELETE "http://localhost:3030/menu/45678"
+curl http://localhost:3030/menu
+curl http://localhost:3030/menu/10233
+curl -X POST "http://localhost:3030/menu?code=45678&name=Mango&price=4.50"
+curl http://localhost:3030/menu/45678
+curl -X PUT "http://localhost:3030/menu/45678?price=5.00"
+curl -X DELETE http://localhost:3030/menu/45678
 ```
 
-These operations change `menu/menu.json` locally. To reset the data, restore its original contents from Git. Use `curl.exe` instead of PowerShell's `curl` alias to use the same syntax as above.
+On Windows, use `curl.exe` in PowerShell to avoid the `curl` alias. To reset local menu changes, restore `menu/menu.json` from Git.
 
-## Automated tests
+## Tests
+
+Run the automated integration test suite:
 
 ```bash
 node --test tests/api.test.mjs
 ```
 
-The automated tests create a **temporary copy** of the server and menu data, then exercise a local HTTP service on port 3030. They do not call any external endpoint or edit the source project's menu file. The included GitHub Actions workflow runs the same test suite on each push or pull request.
+The suite launches a local test server in a temporary directory, validates API responses and persistence, and leaves the repository's menu data unchanged. GitHub Actions runs syntax checks and the tests on pushes and pull requests.
 
-## Design notes and limitations
+## Scope
 
-- The original Part 2 implementation is retained for transparency. Some basic HTTP routes are permissive (for example, unknown GET paths serve the welcome text).
-- The server is bound to a fixed port and uses **relative local file paths**; it should be run locally only, not exposed directly on the public internet.
-- Concurrent file edits are not serialized, and the response may be sent before the asynchronous write is completed. The test suite waits for persistence when verifying state. A production implementation should await writes and use atomic, validated storage.
-- The code does not fully validate item properties, handle corrupt JSON gracefully, or implement authentication. Those are natural next improvements, not features claimed as complete here.
-- For a deeper cloud automation and database project, see [GMU Seat Monitor](https://github.com/BirdIsOffline/gmu-seat-monitor).
-
-## Interview explanation
-
-> "I used Node.js's built-in HTTP server to build a menu API for a fictional ice-cream shop. I parse the URL path to identify the requested item and the query parameters to create or update entries. The API uses asynchronous filesystem operations to store a menu as JSON and streams files for GET requests. I tested create, read, update, delete, and error cases. It's a coursework project; its limitations include file-write races and basic input validation."
+This is a locally run coursework API. It uses JSON file storage rather than a database and is not configured for public deployment.
