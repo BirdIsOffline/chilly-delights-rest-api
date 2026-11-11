@@ -1,4 +1,3 @@
-// WRITE YOUR CODE HERE
 const http = require('http');
 const fs = require('fs');
 const { URL } = require('url');
